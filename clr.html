@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Picker App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f4f4f4;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .picker {
+      margin-bottom: 15px;
+    }
+    .preview {
+      width: 150px;
+      height: 150px;
+      border-radius: 12px;
+      border: 2px solid #000;
+      margin-bottom: 15px;
+      background: #7a7a7a;
+    }
+    .code {
+      font-size: 18px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #333;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #555;
+    }
+    input[type="text"] {
+      padding: 6px 10px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      width: 150px;
+      text-align: center;
+    }
+    .history {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .history div {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      border: 1px solid #000;
+      cursor: pointer;
+    }
+      .container {
+        margin-top: 25px;
+        background: linear-gradient(to bottom, gray, black, white);
+        padding: 20px;
+        gap:15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        width: 350px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+  </style>
+</head>
+<body>
+  <h1>Color Picker</h1>
+<div class="container">
+  <!-- Input color -->
+  <input type="color" id="colorPicker" class="picker">
+
+  <!-- Input text -->
+  <input type="text" id="colorInput" placeholder="Type color (ex: #000000)">
+
+  <!-- Preview -->
+  <div class="preview" id="preview"></div>
+  <div class="code" id="colorCode">#</div>
+
+  <!-- Copy button -->
+  <button onclick="copyColor()">Copy Color</button>
+
+  <!-- History -->
+  <div class="history" id="history"></div>
+
+  <script>
+    const picker = document.getElementById("colorPicker");
+    const preview = document.getElementById("preview");
+    const colorCode = document.getElementById("colorCode");
+    const historyDiv = document.getElementById("history");
+    const colorInput = document.getElementById("colorInput");
+    let history = [];
+
+    // Update warna dari color picker
+    picker.addEventListener("input", (e) => {
+      updateColor(e.target.value);
+    });
+
+    // Update warna dari input text
+    colorInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      if (isValidColor(val)) {
+        updateColor(val);
+      }
+    });
+
+    function updateColor(color) {
+      preview.style.background = color;
+      colorCode.textContent = color;
+      colorInput.value = color;
+      picker.value = isHex(color) ? color : picker.value;
+
+      if (!history.includes(color)) {
+        history.push(color);
+        const colorBox = document.createElement("div");
+        colorBox.style.background = color;
+        colorBox.addEventListener("click", () => {
+          updateColor(color);
+        });
+        historyDiv.appendChild(colorBox);
+      }
+    }
+
+    function copyColor() {
+      navigator.clipboard.writeText(colorCode.textContent);
+      alert("Copied: " + colorCode.textContent);
+    }
+
+    // Cek apakah input valid
+    function isValidColor(strColor) {
+      const s = new Option().style;
+      s.color = strColor;
+      return s.color !== "";
+    }
+
+    // Cek format hex
+    function isHex(str) {
+      return /^#([0-9A-F]{3}){1,2}$/i.test(str);
+    }
+  </script>
+</body>
+</html>

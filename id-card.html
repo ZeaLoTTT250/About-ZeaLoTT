@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ID Card Pramuka</title>
+  <style>
+    body {
+  font-family: 'Poppins', sans-serif;
+  background: #f3e5ab;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  color: #5d3a1a;
+  margin-bottom: 10px;
+}
+
+.form-container {
+  margin-bottom: 20px;
+}
+
+input, button {
+  margin: 5px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #7b4c26;
+}
+
+button {
+  background: #7b4c26;
+  color: white;
+  cursor: pointer;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+}
+
+.card {
+  width: 8.5cm;
+  height: 5.4cm;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  background: #fff;
+  position: relative;
+}
+
+/* Depan */
+#front {
+  background: linear-gradient(to bottom right, #fff3d0, #c79c5c);
+  border: 3px solid #7b4c26;
+}
+
+.header {
+  background: #7b4c26;
+  color: #fff;
+  padding: 5px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.header2 {
+  background: #7b4c26;
+  color: #fff;
+  padding: 5px;
+  width: 292px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  border-radius: 10px;
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.photo {
+  width: 2.5cm;
+  height: 3cm;
+  border: 2px solid #7b4c26;
+  overflow: hidden;
+  background: #eee;
+}
+
+.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.biodata {
+  text-align: left;
+  font-size: 12px;
+  color: #3b2a12;
+}
+
+/* Belakang */
+#back {
+  background: linear-gradient(to bottom, #f1d9a8, #d6a76a);
+  border: 3px solid #7b4c26;
+}
+
+.back-content {
+  text-align: center;
+  padding: 10px;
+  color: #3b2a12;
+  transform: translateY(-0.2cm); /* Naik sedikit */
+}
+
+.logo-tunas {
+  width: 2.3cm;
+  margin: 5px 0;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.4));
+}
+
+.back-content h2 {
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.back-content h3 {
+  margin-top: 5px;
+  text-decoration: underline;
+  font-size: 13px;
+}
+
+.back-content p {
+  font-size: 11px;
+  margin: 2px 0;
+}
+
+button {
+  background: #7b4c26;
+  color: white;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #5d3a1a;
+  transform: scale(1.05);
+}
+  </style>
+  <!-- Tambahkan library html2canvas -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+  <h1>Kartu Anggota Pramuka</h1>
+
+  <div class="form-container">
+    <input type="text" id="nama" placeholder="Nama Lengkap">
+    <input type="text" id="gudep" placeholder="Gudep">
+    <input type="text" id="nohp" placeholder="Nomor HP">
+    <input type="date" id="tglLahir" placeholder="Tanggal Lahir">
+    <input type="file" id="foto" accept="image/*">
+    <button onclick="generateCard()">Buat ID Card</button>
+    <button onclick="downloadCard()">Download ID Card</button>
+  </div>
+
+  <div class="container" id="cardContainer">
+    <div class="card" id="front">
+      <div class="front-content">
+        <div class="header">KARTU ANGGOTA PRAMUKA</div>
+        <div class="info">
+          <div class="photo">
+            <img id="previewFoto" src="" alt="Foto Anggota">
+          </div>
+          <div class="biodata">
+            <p><b>Nama:</b> <span id="outNama"></span></p>
+            <p><b>Gudep:</b> <span id="outGudep"></span></p>
+            <p><b>No. HP:</b> <span id="outNoHp"></span></p>
+            <p><b>Tgl Lahir:</b> <span id="outTgl"></span></p>
+            <p><b>Umur:</b> <span id="outUmur"></span> Tahun</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="back">
+      <div class="back-content">
+        <div class="header2">PRAJA MUDA KARANA</div>
+        <h3>TRISATYA</h3>
+        <p>Demi kehormatanku aku berjanji akan bersungguh-sungguh</p>
+        <p>1. Menjalankan kewajiban terhadap Tuhan Yang Maha Esa, NKRI, dan mengamalkan Pancasila.</p>
+        <p>2. Menolong sesama hidup dan ikut membangun masyarakat.</p>
+        <p>3. Menepati Dasa Dharma.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function generateCard() {
+  const nama = document.getElementById("nama").value;
+  const gudep = document.getElementById("gudep").value;
+  const nohp = document.getElementById("nohp").value;
+  const tglLahir = document.getElementById("tglLahir").value;
+  const foto = document.getElementById("foto").files[0];
+
+  if (!nama || !gudep || !nohp || !tglLahir || !foto) {
+    alert("Lengkapi semua data terlebih dahulu!");
+    return;
+  }
+
+  document.getElementById("outNama").innerText = nama;
+  document.getElementById("outGudep").innerText = gudep;
+  document.getElementById("outNoHp").innerText = nohp;
+  document.getElementById("outTgl").innerText = new Date(tglLahir).toLocaleDateString("id-ID");
+
+  // Hitung umur
+  const lahir = new Date(tglLahir);
+  const now = new Date();
+  let umur = now.getFullYear() - lahir.getFullYear();
+  const m = now.getMonth() - lahir.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < lahir.getDate())) umur--;
+  document.getElementById("outUmur").innerText = umur;
+
+  // Tampilkan foto
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    document.getElementById("previewFoto").src = e.target.result;
+  };
+  reader.readAsDataURL(foto);
+}
+
+// Fungsi download ID card (depan + belakang)
+function downloadCard() {
+  const container = document.getElementById("cardContainer");
+  html2canvas(container, { scale: 3 }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "IDCard_Pramuka.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+}
+  </script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tweet Generator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root{--bg:#fff;--card:#f8f9fa;--text:#0f1720;--muted:#6b7280}
+    [data-theme="dark"]{--bg:#0f1720;--card:#0b1220;--text:#e6eef8;--muted:#94a3b8}
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{margin:0;background:linear-gradient(180deg,#e6f0ff 0%,var(--bg) 60%);color:var(--text);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px}
+    .app{width:980px;max-width:100%;display:grid;grid-template-columns:420px 1fr;gap:24px}.panel{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+h1{font-size:18px;margin:6px 0 12px}
+
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+input[type=text],textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(15,23,42,0.08);background:transparent;color:var(--text);font-size:14px}
+textarea{min-height:120px;resize:vertical}
+.row{display:flex;gap:8px}
+.row > *{flex:1}
+
+.controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+button{background:#1d9bf0;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+button.secondary{background:transparent;color:var(--text);border:1px solid rgba(15,23,42,0.06)}
+
+/* Tweet preview */
+.tweet{width:100%;max-width:640px;border-radius:14px;padding:16px;background:var(--bg);border:1px solid rgba(15,23,42,0.04);color:var(--text)}
+.tweet-header{display:flex;gap:12px;align-items:center}
+.avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#bde0ff,#7fb2ff);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px}
+.meta{display:flex;flex-direction:column}
+.name{font-weight:700;color:var(--text)}
+.handle{color:var(--muted);font-size:13px}
+.time{color:var(--muted);font-size:13px;margin-left:8px}
+.tweet-text{margin:12px 0;font-size:16px;line-height:1.4;white-space:pre-wrap;color:var(--text)}
+.tweet-actions{display:flex;gap:18px;color:var(--muted);font-size:13px;border-top:1px solid rgba(15,23,42,0.03);padding-top:12px;margin-top:10px}
+.muted{color:var(--muted)}
+
+.footer-note{font-size:12px;color:var(--muted);margin-top:8px}
+
+.top-row{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.small{font-size:13px;color:var(--muted)}
+
+input[type=file]{display:none}
+.avatar-upload{display:inline-flex;align-items:center;gap:8px}
+.char-count{font-weight:700}
+
+@media (max-width:880px){.app{grid-template-columns:1fr;}}
+
+  </style>
+</head>
+<body>
+  <div class="app" id="app" data-theme="light">
+    <div class="panel">
+      <div class="top-row">
+        <h1>HTML Tweet Generator</h1>
+        <div class="small">Preview your tweet & copy</div>
+      </div><label for="name">Display name</label>
+  <input id="name" type="text" value="NAME" />
+
+  <label for="handle">Handle (without @)</label>
+  <input id="handle" type="text" value="@username" />
+
+  <label for="avatar">Avatar (optional)</label>
+  <div class="row" style="align-items:center">
+    <div class="avatar-upload">
+      <label for="avatarInput" class="secondary" style="padding:6px 8px;border-radius:8px;border:1px dashed rgba(15,23,42,0.06);cursor:pointer">Upload</label>
+      <span id="avatarName" class="small muted">No file</span>
+    </div>
+    <input id="avatarInput" type="file" accept="image/*">
+    <button id="clearAvatar" class="secondary">Clear</button>
+  </div>
+
+  <label for="tweet">Tweet text</label>
+  <textarea id="tweet" maxlength="280" placeholder="Write your tweet...">Halo dunia! Ini contoh tweet dari Tweet Generator HTML.</textarea>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+    <div class="small muted">Max 280 characters</div>
+    <div class="small">Characters: <span id="count" class="char-count">0</span>/280</div>
+  </div>
+
+  <div class="row" style="margin-top:12px">
+    <div>
+      <label for="timeMode">Timestamp</label>
+      <select id="timeMode">
+        <option value="now">Now (auto)</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+    <div id="customTimeWrap" style="display:none">
+      <label for="customTime">Custom time</label>
+      <input id="customTime" type="text" placeholder="e.g. Sep 16" />
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:12px">
+    <div>
+      <label for="comments">Comments</label>
+      <input id="comments" type="text" value="3" />
+    </div>
+    <div>
+      <label for="reposts">Reposts</label>
+      <input id="reposts" type="text" value="12" />
+    </div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div>
+      <label for="likes">Likes</label>
+      <input id="likes" type="text" value="34" />
+    </div>
+    <div>
+      <label for="shares">Shares</label>
+      <input id="shares" type="text" value="Share" />
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="generate">Generate Preview</button>
+    <button id="copyText" class="secondary">Copy text</button>
+    <button id="downloadTxt" class="secondary">Download .txt</button>
+    <button id="downloadPng" class="secondary">Download TWEET</button>
+    <button id="toggleTheme" class="secondary">Toggle Theme</button>
+  </div>
+
+  <div class="footer-note">Tip: click "Generate Preview" after editing to update the preview.</div>
+</div>
+
+<div class="panel">
+  <h1>Preview</h1>
+  <div id="preview" class="tweet" role="region" aria-label="Tweet preview">
+    <div class="tweet-header">
+      <div id="pvAvatar" class="avatar">Z</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="meta">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div id="pvName" class="name">ZeaLoTT</div>
+              <div id="pvHandle" class="handle">@zealott_woi</div>
+              <div id="pvTime" class="time">· Sep 16</div>
+            </div>
+            <div id="pvExtra" class="muted"></div>
+          </div>
+        </div>
+        <div id="pvText" class="tweet-text">Halo dunia! Ini contoh tweet dari Tweet Generator HTML.</div>
+      </div>
+    </div>
+    <div class="tweet-actions">
+      <div><i class="fa-regular fa-comment"></i> <span id="pvComments">3</span></div>
+      <div><i class="fa-solid fa-retweet"></i> <span id="pvReposts">12</span></div>
+      <div><i class="fa-regular fa-heart"></i> <span id="pvLikes">34</span></div>
+      <div><i class="fa-solid fa-share"></i> <span id="pvShares">Share</span></div>
+    </div>
+  </div>
+</div>
+
+  </div>  <script>
+    const tweetEl = document.getElementById('tweet');
+    const countEl = document.getElementById('count');
+    const pvText = document.getElementById('pvText');
+    const pvName = document.getElementById('pvName');
+    const pvHandle = document.getElementById('pvHandle');
+    const pvTime = document.getElementById('pvTime');
+    const pvAvatar = document.getElementById('pvAvatar');
+    const avatarInput = document.getElementById('avatarInput');
+    const avatarName = document.getElementById('avatarName');
+    const clearAvatar = document.getElementById('clearAvatar');
+    const nameInput = document.getElementById('name');
+    const handleInput = document.getElementById('handle');
+    const generateBtn = document.getElementById('generate');
+    const copyTextBtn = document.getElementById('copyText');
+    const downloadBtn = document.getElementById('downloadTxt');
+    const downloadPng = document.getElementById('downloadPng');
+    const timeMode = document.getElementById('timeMode');
+    const customTimeWrap = document.getElementById('customTimeWrap');
+    const customTime = document.getElementById('customTime');
+    const toggleTheme = document.getElementById('toggleTheme');
+    const app = document.getElementById('app');
+
+    const commentsInput = document.getElementById('comments');
+    const repostsInput = document.getElementById('reposts');
+    const likesInput = document.getElementById('likes');
+    const sharesInput = document.getElementById('shares');
+    const pvComments = document.getElementById('pvComments');
+    const pvReposts = document.getElementById('pvReposts');
+    const pvLikes = document.getElementById('pvLikes');
+    const pvShares = document.getElementById('pvShares');
+
+    function updateCount(){
+      const len = tweetEl.value.length;
+      countEl.textContent = len;
+      if(len>260) countEl.style.color = 'crimson'; else countEl.style.color='';
+    }
+    tweetEl.addEventListener('input', updateCount);
+    updateCount();
+
+    timeMode.addEventListener('change', ()=>{
+      customTimeWrap.style.display = timeMode.value === 'custom' ? 'block' : 'none';
+    });
+
+    avatarInput.addEventListener('change', ()=>{
+      const f = avatarInput.files[0];
+      if(!f) return;
+      avatarName.textContent = f.name;
+      const reader = new FileReader();
+      reader.onload = e => {
+        pvAvatar.style.backgroundImage = `url(${e.target.result})`;
+        pvAvatar.style.backgroundSize = 'cover';
+        pvAvatar.textContent = '';
+      };
+      reader.readAsDataURL(f);
+    });
+
+    clearAvatar.addEventListener('click', ()=>{
+      avatarInput.value = '';
+      avatarName.textContent = 'No file';
+      pvAvatar.style.backgroundImage = '';
+      pvAvatar.textContent = (nameInput.value||'U').trim().charAt(0).toUpperCase();
+    });
+
+    generateBtn.addEventListener('click', ()=>{
+      pvText.textContent = tweetEl.value || '';
+      pvName.textContent = nameInput.value || 'User';
+      pvHandle.textContent = '@' + ((handleInput.value||'user').replace(/^@/,''));
+      if(timeMode.value === 'now'){
+        const d = new Date();
+        const options = { month: 'short', day: 'numeric' };
+        pvTime.textContent = '· ' + new Intl.DateTimeFormat('en-US', options).format(d);
+      } else {
+        pvTime.textContent = '· ' + (customTime.value || 'Sep 16');
+      }
+      if(!pvAvatar.style.backgroundImage){
+        pvAvatar.textContent = (nameInput.value||'U').trim().charAt(0).toUpperCase();
+      }
+      pvComments.textContent = commentsInput.value || '0';
+      pvReposts.textContent = repostsInput.value || '0';
+      pvLikes.textContent = likesInput.value || '0';
+      pvShares.textContent = sharesInput.value || 'Share';
+    });
+
+    copyTextBtn.addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(tweetEl.value);
+        copyTextBtn.textContent = 'Copied!';
+        setTimeout(()=>copyTextBtn.textContent='Copy text',1200);
+      }catch(e){
+        alert('Clipboard not available');
+      }
+    });
+
+    downloadBtn.addEventListener('click', ()=>{
+      const blob = new Blob([tweetEl.value], {type:'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'tweet.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    downloadPng.addEventListener('click', ()=>{
+      const el = document.getElementById('preview');
+      html2canvas(el,{backgroundColor:null}).then(canvas=>{
+        const link = document.createElement('a');
+        link.download = 'tweet.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    });
+
+    toggleTheme.addEventListener('click', ()=>{
+      if(app.getAttribute('data-theme')==='light') app.setAttribute('data-theme','dark'); else app.setAttribute('data-theme','light');
+    });
+
+    generateBtn.click();
+  </script></body>
+</html>
